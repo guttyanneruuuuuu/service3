@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0014" />
+  <meta name="description" content="AVATAR FORGE — 写真1枚から伝説級3Dアバターを召喚。SSR/SR/Rガチャ、5スタイル、360°録画&SNSシェア。完全ブラウザ処理でプライバシー安心。" />
+  <meta name="keywords" content="3Dアバター,ガチャ,AI,アバター生成,SNS,無料,サイバーパンク,ドット絵" />
+
+  <!-- OGP -->
+  <meta property="og:title" content="AVATAR FORGE — 伝説級3Dアバターを召喚せよ" />
+  <meta property="og:description" content="写真1枚でSSR/SR/R 3Dアバターを生成。360°録画してSNSでシェア。全ブラウザ処理でプライバシー完璧。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="./assets/ogp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <title>AVATAR FORGE — 伝説級3Dアバターを召喚</title>
+
+  <!-- Security: CSP (GitHub Pagesでも有効) -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.skypack.dev;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com data:;
+    img-src 'self' data: blob: https:;
+    media-src 'self' blob:;
+    connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://cdn.skypack.dev blob: data:;
+    worker-src 'self' blob:;
+    object-src 'none';
+    base-uri 'self';
+  " />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css" />
+
+  <!-- Three.js & deps via importmap (ブラウザネイティブ) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 背景パーティクル -->
+  <canvas id="bg-particles" aria-hidden="true"></canvas>
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <div class="logo">
+      <span class="logo-icon">⚔</span>
+      <span class="logo-text">AVATAR <em>FORGE</em></span>
+    </div>
+    <nav class="nav">
+      <a href="#generator">生成</a>
+      <a href="#how">使い方</a>
+      <a href="#gallery">ギャラリー</a>
+      <a class="nav-cta" href="#support" id="nav-support">応援</a>
+    </nav>
+  </header>
+
+  <!-- ヒーロー -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h1 class="hero-title">
+        <span class="glitch" data-text="LEGEND">LEGEND</span>
+        <span class="hero-sub">写真1枚で<strong>伝説級3Dアバター</strong>を召喚。</span>
+      </h1>
+      <p class="hero-desc">
+        AI顔解析 × 手続き型3D生成 × ガチャ演出。<br />
+        SSR/SR/Rがランダム出現。360°録画してSNSでバズれ。
+      </p>
+      <div class="hero-cta">
+        <a href="#generator" class="btn btn-primary">いますぐ召喚する</a>
+        <a href="#how" class="btn btn-ghost">使い方を見る</a>
+      </div>
+      <div class="hero-badges">
+        <span class="badge">✓ 完全無料</span>
+        <span class="badge">✓ 登録不要</span>
+        <span class="badge">✓ 画像はサーバーに送らない</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 生成セクション -->
+  <section id="generator" class="generator">
+    <h2 class="section-title">AVATAR FORGE</h2>
+    <p class="section-sub">写真をアップ → スタイル選択 → ガチャ召喚</p>
+
+    <div class="studio">
+      <!-- 左: 入力・コントロール -->
+      <div class="studio-panel studio-controls">
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="file-input" accept="image/*" hidden />
+          <button type="button" class="upload-cta" id="upload-btn">
+            <span class="upload-icon">📸</span>
+            <span>写真を選択 / ドラッグ&ドロップ</span>
+            <small>顔が正面を向いた1枚がベスト</small>
+          </button>
+          <div class="upload-preview" id="upload-preview" hidden>
+            <img id="preview-img" alt="アップロード画像" />
+            <button type="button" class="upload-reset" id="upload-reset">×</button>
+          </div>
+        </div>
+
+        <div class="style-picker">
+          <h3>スタイル</h3>
+          <div class="style-grid" role="radiogroup" aria-label="アバタースタイル">
+            <button type="button" class="style-tile active" data-style="voxel" role="radio" aria-checked="true">
+              <span class="style-emoji">🟦</span><span>VOXEL</span><small>ドット/マイクラ風</small>
+            </button>
+            <button type="button" class="style-tile" data-style="lowpoly" role="radio" aria-checked="false">
+              <span class="style-emoji">🔺</span><span>LOW POLY</span><small>ゲームキャラ風</small>
+            </button>
+            <button type="button" class="style-tile" data-style="cyber" role="radio" aria-checked="false">
+              <span class="style-emoji">⚡</span><span>CYBER</span><small>サイバーパンク</small>
+            </button>
+            <button type="button" class="style-tile" data-style="bio" role="radio" aria-checked="false">
+              <span class="style-emoji">🧬</span><span>BIO MECH</span><small>バイオメカ</small>
+            </button>
+            <button type="button" class="style-tile" data-style="fantasy" role="radio" aria-checked="false">
+              <span class="style-emoji">⚔️</span><span>FANTASY</span><small>騎士/魔法使い</small>
+            </button>
+            <button type="button" class="style-tile" data-style="crystal" role="radio" aria-checked="false">
+              <span class="style-emoji">💎</span><span>CRYSTAL</span><small>水晶生命体</small>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-xl btn-summon" id="btn-summon">
+          <span class="summon-icon">✨</span>
+          <span>ガチャ召喚する</span>
+        </button>
+
+        <div class="summon-meta">
+          <span id="summon-count">今日の召喚数: 0</span>
+          <span class="rarity-odds">SSR 4% / SR 16% / R 80%</span>
+        </div>
+      </div>
+
+      <!-- 右: 3Dビューア -->
+      <div class="studio-panel studio-viewer">
+        <div class="viewer-frame">
+          <div id="three-container" aria-label="3Dアバタービューア"></div>
+          <div class="viewer-overlay" id="viewer-overlay">
+            <div class="overlay-hint">
+              <div class="hint-icon">✨</div>
+              <div>左のパネルから写真をアップして<br />召喚ボタンを押そう</div>
+            </div>
+          </div>
+          <div class="rarity-badge" id="rarity-badge" hidden>
+            <span class="rarity-tag">RARITY</span>
+            <strong id="rarity-label">—</strong>
+          </div>
+          <div class="viewer-actions">
+            <button type="button" class="icon-btn" id="btn-screenshot" title="スクショ">📷</button>
+            <button type="button" class="icon-btn" id="btn-record" title="360°録画">🎥</button>
+            <button type="button" class="icon-btn" id="btn-download" title="PNG保存">⬇</button>
+            <button type="button" class="icon-btn" id="btn-share" title="シェア">🔗</button>
+          </div>
+          <div class="recording-indicator" id="rec-indicator" hidden>● REC</div>
+        </div>
+        <div class="stats-row" id="stats-row" hidden>
+          <div class="stat"><span>POWER</span><b id="stat-power">—</b></div>
+          <div class="stat"><span>MAGIC</span><b id="stat-magic">—</b></div>
+          <div class="stat"><span>SPEED</span><b id="stat-speed">—</b></div>
+          <div class="stat"><span>LUCK</span><b id="stat-luck">—</b></div>
+        </div>
+        <div class="avatar-name" id="avatar-name" hidden></div>
+      </div>
+    </div>
+
+    <!-- ガチャ演出オーバーレイ -->
+    <div class="gacha-overlay" id="gacha-overlay" hidden>
+      <div class="gacha-core">
+        <div class="gacha-ring r1"></div>
+        <div class="gacha-ring r2"></div>
+        <div class="gacha-ring r3"></div>
+        <div class="gacha-orb"></div>
+      </div>
+      <div class="gacha-text" id="gacha-text">SUMMONING...</div>
+    </div>
+  </section>
+
+  <!-- 使い方 -->
+  <section id="how" class="how">
+    <h2 class="section-title">使い方</h2>
+    <ol class="steps">
+      <li><b>📸 写真アップ</b><span>自撮りでもOK。顔が写ってればなんでもいける</span></li>
+      <li><b>🎨 スタイル選択</b><span>ドット絵〜サイバーパンクまで6系統</span></li>
+      <li><b>✨ ガチャ召喚</b><span>SSR引いたらSNSで自慢しよう</span></li>
+      <li><b>🎥 録画してシェア</b><span>360°動画をTikTok/Xに投下</span></li>
+    </ol>
+  </section>
+
+  <!-- ギャラリー（ローカル保存分） -->
+  <section id="gallery" class="gallery">
+    <h2 class="section-title">マイギャラリー</h2>
+    <p class="section-sub">召喚したアバターは端末内に自動保存（最大12体）</p>
+    <div class="gallery-grid" id="gallery-grid">
+      <div class="gallery-empty">まだ召喚されたアバターはいません</div>
+    </div>
+  </section>
+
+  <!-- サポート（課金導線） -->
+  <section id="support" class="support">
+    <div class="support-card">
+      <h2>気に入ったら応援してください</h2>
+      <p>広告なし・無料で運営中。サーバー代と新スタイル開発のためサポート募集中！</p>
+      <div class="support-actions">
+        <a class="btn btn-coffee" id="buy-coffee-btn" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener noreferrer">☕ Buy Me a Coffee</a>
+        <a class="btn btn-kofi" id="kofi-btn" href="https://ko-fi.com/" target="_blank" rel="noopener noreferrer">💖 Ko-fi で応援</a>
+        <button type="button" class="btn btn-ghost" id="share-site-btn">🔗 友達に教える</button>
+      </div>
+      <p class="support-note">※今後、限定スタイル「<b>神話PREMIUM</b>」などサポーター特典を追加予定</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div>© 2026 AVATAR FORGE · Built by a 高校生 dev</div>
+    <div class="footer-links">
+      <a href="#" id="privacy-link">プライバシー</a>
+      <a href="#" id="terms-link">利用規約</a>
+      <a href="https://github.com/guttyanneruuuuuu/service3" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </div>
+  </footer>
+
+  <!-- モーダル -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-content">
+      <button class="modal-close" data-close-modal aria-label="閉じる">×</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script type="module" src="./js/analytics.js"></script>
+  <script type="module" src="./js/ui.js"></script>
+  <script type="module" src="./js/face.js"></script>
+  <script type="module" src="./js/avatar3d.js"></script>
+  <script type="module" src="./js/app.js"></script>
+  <script src="./js/bg.js"></script>
+</body>
+</html>
