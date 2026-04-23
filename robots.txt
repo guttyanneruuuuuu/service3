@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guttyanneruuuuuu.github.io/service3/sitemap.xml

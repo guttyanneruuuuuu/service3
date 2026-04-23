@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a12" />
+<meta name="format-detection" content="telephone=no" />
+
+<title>Roomify - あなたの部屋を3Dで、世界に公開</title>
+<meta name="description" content="自分だけの3Dルームをブラウザで作って、URLひとつで世界中の誰でも歩き回れる。完全無料、ログイン不要。今すぐ作ろう。" />
+
+<!-- OGP -->
+<meta property="og:title" content="Roomify - あなたの部屋を3Dで公開しよう" />
+<meta property="og:description" content="ブラウザで作る、歩き回れる3Dルーム。URL1つでシェア可能。" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://guttyanneruuuuuu.github.io/service3/" />
+<meta property="og:image" content="https://guttyanneruuuuuu.github.io/service3/assets/ogp.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Roomify - 3Dで部屋を作って世界に公開" />
+<meta name="twitter:description" content="ブラウザだけで歩き回れる3D部屋が作れる。URL 1つでシェアOK。" />
+<meta name="twitter:image" content="https://guttyanneruuuuuu.github.io/service3/assets/ogp.png" />
+
+<!-- Security: CSP (strict-ish) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://www.google-analytics.com https://region1.google-analytics.com https://*.analytics.google.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self';" />
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet" />
+
+<!-- Favicon (inline SVG) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23a855f7'/%3E%3Ctext x='50' y='68' font-size='62' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'%3ER%3C/text%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="./css/style.css" />
+
+<!-- Google Analytics (GA4) - placeholder id, replace if needed -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PLACEHOLDER"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PLACEHOLDER', { anonymize_ip: true });
+</script>
+
+<!-- Three.js via import map -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ============== HERO / LANDING ============== -->
+<section id="hero" class="screen active">
+  <div class="hero-bg">
+    <canvas id="hero-canvas"></canvas>
+  </div>
+  <div class="hero-content">
+    <div class="logo-badge">R</div>
+    <h1 class="hero-title">自分の<span class="accent">部屋</span>を<br/>3Dで作って、<br/>世界に公開しよう。</h1>
+    <p class="hero-sub">ブラウザで家具を並べるだけ。URL 1つで誰でも歩き回れる3D空間のできあがり。完全無料・ログイン不要。</p>
+    <div class="hero-cta">
+      <button id="btn-create" class="btn btn-primary btn-xl">
+        <span>🚀 今すぐ部屋を作る</span>
+      </button>
+      <button id="btn-explore" class="btn btn-ghost btn-xl">
+        🌍 みんなの部屋を見る
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div><strong id="stat-rooms">0</strong><span>作られた部屋</span></div>
+      <div><strong id="stat-visits">0</strong><span>訪問</span></div>
+      <div><strong>100%</strong><span>無料</span></div>
+    </div>
+  </div>
+
+  <div class="hero-features">
+    <div class="feat">
+      <div class="feat-ico">🎨</div>
+      <h3>ドラッグで家具配置</h3>
+      <p>マイクラ風の直感操作。スマホでもサクサク。</p>
+    </div>
+    <div class="feat">
+      <div class="feat-ico">🚶</div>
+      <h3>歩き回れる</h3>
+      <p>WASD / スワイプで自由に散策。</p>
+    </div>
+    <div class="feat">
+      <div class="feat-ico">🔗</div>
+      <h3>URL 1つでシェア</h3>
+      <p>サーバー不要、データはURLの中に。</p>
+    </div>
+    <div class="feat">
+      <div class="feat-ico">💬</div>
+      <h3>訪問者が落書き</h3>
+      <p>壁にメッセージを残してもらおう。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== EDITOR ============== -->
+<section id="editor" class="screen">
+  <header class="top-bar">
+    <button class="icon-btn" id="btn-back-home" aria-label="ホーム">←</button>
+    <div class="room-title-wrap">
+      <input id="room-title" type="text" maxlength="24" placeholder="マイルーム" />
+    </div>
+    <div class="top-bar-right">
+      <button class="icon-btn" id="btn-preview" title="プレビュー" aria-label="プレビュー">👁️</button>
+      <button class="btn btn-primary btn-sm" id="btn-share">シェア</button>
+    </div>
+  </header>
+
+  <div class="editor-layout">
+    <div class="canvas-wrap">
+      <canvas id="editor-canvas"></canvas>
+      <div class="canvas-hint" id="canvas-hint">
+        <span class="hint-row">🖱️ 右ドラッグで視点回転</span>
+        <span class="hint-row">👆 家具タップ → 回転・削除</span>
+      </div>
+      <div class="selection-popup" id="selection-popup" hidden>
+        <button data-action="rotate">↻ 回転</button>
+        <button data-action="duplicate">⎘ 複製</button>
+        <button data-action="delete" class="danger">🗑 削除</button>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="panel-tabs">
+        <button class="tab active" data-tab="furniture">家具</button>
+        <button class="tab" data-tab="room">部屋</button>
+        <button class="tab" data-tab="theme">テーマ</button>
+      </div>
+
+      <div class="panel-body">
+        <div class="tab-panel active" data-tab-content="furniture">
+          <div class="furni-cats" id="furni-cats"></div>
+          <div class="furni-grid" id="furni-grid"></div>
+        </div>
+        <div class="tab-panel" data-tab-content="room">
+          <label class="control">
+            <span>部屋の広さ</span>
+            <input type="range" id="room-size" min="6" max="20" step="1" value="10" />
+            <span class="val" id="room-size-val">10m</span>
+          </label>
+          <label class="control">
+            <span>天井の高さ</span>
+            <input type="range" id="room-height" min="2.4" max="6" step="0.2" value="3" />
+            <span class="val" id="room-height-val">3m</span>
+          </label>
+          <label class="control">
+            <span>床の色</span>
+            <input type="color" id="floor-color" value="#8b6f4e" />
+          </label>
+          <label class="control">
+            <span>壁の色</span>
+            <input type="color" id="wall-color" value="#f0e8dc" />
+          </label>
+        </div>
+        <div class="tab-panel" data-tab-content="theme">
+          <div class="theme-grid" id="theme-grid"></div>
+          <div class="premium-note">
+            <span>🔒 プレミアムテーマ</span>
+            <p>ネオン、水族館、宇宙、アニメ風など豪華パックをアンロック</p>
+            <button class="btn btn-primary btn-sm" id="btn-buy-premium">¥500でアンロック</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="mobile-furniture-drawer" id="mobile-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-tabs">
+      <button class="dtab active" data-dtab="furniture">家具</button>
+      <button class="dtab" data-dtab="room">部屋</button>
+      <button class="dtab" data-dtab="theme">テーマ</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+</section>
+
+<!-- ============== VIEWER (歩き回り) ============== -->
+<section id="viewer" class="screen">
+  <header class="top-bar viewer-bar">
+    <button class="icon-btn" id="btn-exit-viewer" aria-label="戻る">←</button>
+    <div class="viewer-title">
+      <strong id="viewer-room-title">マイルーム</strong>
+      <span id="viewer-visits">👁 0</span>
+    </div>
+    <div class="top-bar-right">
+      <button class="icon-btn" id="btn-msg" title="メッセージ">💬</button>
+      <button class="btn btn-primary btn-sm" id="btn-share2">シェア</button>
+    </div>
+  </header>
+  <canvas id="viewer-canvas"></canvas>
+  <div class="viewer-hud">
+    <div class="joystick" id="joystick"><div class="joystick-knob"></div></div>
+    <div class="look-pad" id="lookpad"><span>視点</span></div>
+  </div>
+  <div class="viewer-tip" id="viewer-tip">WASDで移動 / マウスで視点 / Eで落書き</div>
+</section>
+
+<!-- ============== MODALS ============== -->
+<div class="modal" id="share-modal" hidden>
+  <div class="modal-inner">
+    <button class="modal-close" data-close>×</button>
+    <h2>🎉 部屋が完成！</h2>
+    <p class="muted">URLをコピーしてシェアしよう</p>
+    <div class="share-url">
+      <input id="share-url-input" readonly />
+      <button class="btn btn-primary btn-sm" id="btn-copy-url">コピー</button>
+    </div>
+    <div class="share-btns">
+      <a id="share-twitter" class="share-btn x" target="_blank" rel="noopener">𝕏 で投稿</a>
+      <a id="share-line" class="share-btn line" target="_blank" rel="noopener">LINE</a>
+      <button id="share-native" class="share-btn native">その他</button>
+    </div>
+    <div class="qr-wrap">
+      <canvas id="qr-canvas" width="180" height="180"></canvas>
+      <p class="muted small">QRコードで友達に</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="msg-modal" hidden>
+  <div class="modal-inner">
+    <button class="modal-close" data-close>×</button>
+    <h2>💬 訪問メッセージ</h2>
+    <p class="muted">この部屋に一言残していこう</p>
+    <div class="msg-list" id="msg-list"></div>
+    <div class="msg-form">
+      <input id="msg-name" type="text" maxlength="12" placeholder="名前（任意）" />
+      <textarea id="msg-text" maxlength="140" placeholder="メッセージを書く…"></textarea>
+      <button class="btn btn-primary btn-sm" id="btn-send-msg">残す</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="premium-modal" hidden>
+  <div class="modal-inner">
+    <button class="modal-close" data-close>×</button>
+    <h2>✨ Roomify Premium</h2>
+    <ul class="premium-list">
+      <li>🌈 プレミアムテーマ全解放（ネオン・宇宙・水族館・アニメ etc）</li>
+      <li>🪑 限定家具パック 100+</li>
+      <li>🔗 カスタムURL (yourname.roomify)</li>
+      <li>📈 訪問者アナリティクス</li>
+      <li>💎 来訪者からの投げ銭受取</li>
+    </ul>
+    <div class="price">¥500 <span>/ 買い切り</span></div>
+    <button class="btn btn-primary btn-xl" id="btn-checkout">Stripeで購入</button>
+    <p class="muted small center">※ 現在はベータ版のため、購入後も即時還元となります。</p>
+  </div>
+</div>
+
+<div class="modal" id="toast-wrap" hidden></div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
